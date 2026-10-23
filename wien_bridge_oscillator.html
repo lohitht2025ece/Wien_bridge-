@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Wien Bridge Oscillator – Analog Electronics</title>
+<style>
+:root{--c:#0b5394;--bg:#f4f7fb;--ok:#d9f2e0;--bad:#fbdcdc;--un:#fff3cd}
+*{box-sizing:border-box}body{margin:0;font:16px/1.6 system-ui,Segoe UI,Arial,sans-serif;background:var(--bg);color:#1c2733}
+header{background:linear-gradient(135deg,#0b5394,#1a73c9);color:#fff;padding:28px 5%}
+header h1{margin:0 0 6px;font-size:1.9rem}header p{margin:4px 0}
+nav{position:sticky;top:0;background:#fff;box-shadow:0 2px 6px #0002;padding:8px 5%;display:flex;flex-wrap:wrap;gap:6px 14px;z-index:9}
+nav a{color:var(--c);text-decoration:none;font-weight:600;font-size:.9rem}
+main{max-width:1000px;margin:auto;padding:12px 4%}
+section{background:#fff;border-radius:10px;padding:18px 22px;margin:18px 0;box-shadow:0 1px 4px #0001}
+h2{color:var(--c);border-bottom:2px solid #dbe6f3;padding-bottom:4px}h3{margin-bottom:4px}
+table{border-collapse:collapse;width:100%;margin:10px 0;font-size:.93rem;display:block;overflow-x:auto}
+td,th{border:1px solid #c9d5e3;padding:6px 10px;text-align:left}th{background:#e8f0fa}
+.box{background:#eef5ff;border-left:4px solid var(--c);padding:8px 14px;margin:10px 0;border-radius:4px}
+.eq{background:#fafafa;border:1px dashed #9ab;padding:8px 14px;margin:8px 0;font-family:Cambria,Georgia,serif;font-size:1.05rem;overflow-x:auto}
+svg{max-width:100%;height:auto;background:#fff;border:1px solid #dbe6f3;border-radius:6px}
+figcaption{font-size:.85rem;color:#456;margin-bottom:8px}
+button{background:var(--c);color:#fff;border:0;border-radius:6px;padding:8px 16px;cursor:pointer;font-size:.95rem;margin:6px 6px 6px 0}
+input[type=number]{width:90px;padding:5px}
+.q{border:1px solid #d5dfeb;border-radius:8px;padding:8px 14px;margin:10px 0}.q label{display:block;cursor:pointer;padding:2px 0}
+.q.ok{background:var(--ok)}.q.bad{background:var(--bad)}.q.un{background:var(--un)}
+.ex{margin-top:6px;font-size:.92rem;border-top:1px solid #0002;padding-top:4px}
+.tag{font-size:.72rem;background:#ddd;border-radius:10px;padding:1px 8px}.score{font-weight:700;font-size:1.1rem}
+details{border:1px solid #d5dfeb;border-radius:8px;padding:6px 12px;margin:8px 0}summary{cursor:pointer;font-weight:600}
+@media print{nav,button{display:none}header{background:#fff;color:#000}section{box-shadow:none;break-inside:avoid}details>*{display:block}}
+</style></head><body>
+<header><h1>Wien Bridge Oscillator</h1>
+<p><b>Subject:</b> Analog Electronics &nbsp;|&nbsp; <b>Unit:</b> Operational Amplifier &nbsp;|&nbsp; <b>Level:</b> B.E./B.Tech ECE &nbsp;|&nbsp; <b>Simulator:</b> Multisim</p>
+<p><b>Objectives:</b> explain how a Wien bridge oscillator works, derive f<sub>0</sub> and the gain condition, design one, solve GATE-style problems and answer interview questions.</p></header>
+<nav><a href="#intro">Introduction</a><a href="#circuit">Circuit</a><a href="#working">Working</a><a href="#waves">Waveforms</a><a href="#math">Equations</a><a href="#problems">Solved Problems</a><a href="#gate">GATE</a><a href="#interview">Interview</a><a href="#apps">Applications</a><a href="#quiz">Quiz</a><a href="#revision">Revision</a></nav>
+<main>
+
+<section id="intro"><h2>1. Introduction</h2>
+<p>A <b>Wien bridge oscillator</b> is a sinusoidal RC oscillator that uses an op-amp as a non-inverting amplifier and a <b>lead-lag RC network</b> (series RC + parallel RC) as the frequency-selective positive-feedback path. Resistive divider R<sub>f</sub>/R<sub>g</sub> gives negative feedback that sets the gain.</p>
+<p><b>Principle:</b> at exactly one frequency f<sub>0</sub> the RC network gives zero phase shift and an attenuation of 1/3. If the amplifier gain is 3, the loop gain is Aβ = 1 with 0° phase, satisfying the <b>Barkhausen criterion</b>, so a sustained sine wave appears.</p>
+<p><b>Importance:</b> low-distortion audio-range signal generation (Hz to a few hundred kHz), the classic design in audio test generators.</p>
+<h3>Prerequisites</h3><p>Non-inverting op-amp gain, RC impedance, complex impedance (s = jω), feedback and Barkhausen criterion.</p>
+<h3>Terminology</h3><table><tr><th>Term</th><th>Meaning</th></tr>
+<tr><td>Barkhausen criterion</td><td>|Aβ| = 1 and total loop phase = 0° (or 360°)</td></tr>
+<tr><td>Lead-lag network</td><td>Phase lag at high f, phase lead at low f, zero at f<sub>0</sub></td></tr>
+<tr><td>Startup gain</td><td>Slightly above 3 so oscillations grow from noise</td></tr>
+<tr><td>AGC / limiter</td><td>Lamp, diodes or JFET that reduce gain as amplitude rises</td></tr></table>
+<p><b>Classification:</b> RC oscillators (Wien bridge, RC phase-shift) vs LC (Colpitts, Hartley) vs crystal; Wien bridge may be fixed-frequency or variable (ganged pot).</p></section>
+
+<section id="circuit"><h2>2. Circuit Diagram</h2>
+<figure><svg viewBox="0 0 430 330" width="560" font-family="Arial" font-size="12" stroke="#1c2733" fill="none" stroke-width="1.6">
+<polygon points="200,60 200,160 300,110" fill="#eef5ff"/>
+<text x="206" y="88" stroke="none" fill="#000">+</text><text x="206" y="142" stroke="none" fill="#000">−</text>
+<text x="226" y="114" stroke="none" fill="#000">Op-amp</text><text x="236" y="52" stroke="none" fill="#555" font-size="10">+Vcc</text><text x="236" y="178" stroke="none" fill="#555" font-size="10">−Vee</text>
+<path d="M200 80H110V40H214M208 40H110M110 80V100M340 110V40H320M250 40"/>
+<rect x="250" y="32" width="70" height="16" fill="#fff"/><line x1="214" y1="28" x2="214" y2="52"/><line x1="208" y1="28" x2="208" y2="52"/>
+<path d="M110 100H70M110 100V110M110 150V170H70M70 100V130M70 136V170M90 170V186"/>
+<rect x="102" y="110" width="16" height="40" fill="#fff"/><line x1="58" y1="130" x2="82" y2="130"/><line x1="58" y1="136" x2="82" y2="136"/>
+<path d="M300 110H400M340 110V220H250M180 220H170V140H200M170 220V250M170 286V300"/>
+<rect x="180" y="212" width="70" height="16" fill="#fff"/><rect x="162" y="250" width="16" height="36" fill="#fff"/>
+<path d="M80 186h20M84 190h12M88 194h4M160 300h20M164 304h12M168 308h4"/>
+<circle cx="340" cy="110" r="3" fill="#000"/><circle cx="110" cy="80" r="3" fill="#000"/>
+<g stroke="none" fill="#000"><text x="270" y="28">R₁ = R</text><text x="196" y="24">C₁ = C</text><text x="122" y="134">R₂ = R</text><text x="22" y="136">C₂ = C</text>
+<text x="196" y="208">R<tspan font-size="9">f</tspan></text><text x="184" y="272">R<tspan font-size="9">g</tspan></text><text x="350" y="104">V<tspan font-size="9">o</tspan> (output)</text><text x="105" y="205">GND</text><text x="125" y="75">V₊</text></g></svg>
+<figcaption>Fig. 1: Wien bridge oscillator. Series R₁C₁ and parallel R₂C₂ form the positive-feedback lead-lag network; R<sub>f</sub> and R<sub>g</sub> form the negative-feedback divider (gain = 1 + R<sub>f</sub>/R<sub>g</sub>).</figcaption></figure>
+<table><tr><th>Component</th><th>Function</th></tr>
+<tr><td>R₁, C₁ (series)</td><td>High-pass arm: passes high frequency, causes phase lead at low f</td></tr>
+<tr><td>R₂, C₂ (parallel)</td><td>Low-pass arm: shunts high frequency, causes phase lag at high f</td></tr>
+<tr><td>R<sub>f</sub>, R<sub>g</sub></td><td>Set non-inverting gain A = 1 + R<sub>f</sub>/R<sub>g</sub> (negative feedback)</td></tr>
+<tr><td>Op-amp</td><td>Provides gain; needs GBW well above f<sub>0</sub>×3</td></tr></table></section>
+
+<section id="working"><h2>3. Working Principle</h2>
+<ol><li><b>Startup:</b> power-on noise contains all frequencies. The RC network feeds back only a band around f<sub>0</sub> in phase.</li>
+<li><b>Growth:</b> with A slightly above 3, Aβ &gt; 1 so the sine amplitude grows exponentially.</li>
+<li><b>Limiting:</b> as amplitude rises, AGC (lamp in R<sub>g</sub>, diodes across R<sub>f</sub>, or JFET) lowers effective gain to exactly 3, settling the amplitude. Without AGC the op-amp saturates and the output clips.</li>
+<li><b>Steady state:</b> Aβ = 1 at 0° phase; stable sine at f<sub>0</sub>.</li></ol>
+<p><b>DC behaviour:</b> C₁ blocks DC from the output, R₂ returns the + input to ground, and the non-inverting amplifier amplifies any DC offset by 1 + R<sub>f</sub>/R<sub>g</sub> (about 3), so the DC offset is small when input bias currents are small. <b>AC behaviour:</b> as analysed in Section 5.</p>
+<p><b>Assumptions:</b> ideal op-amp (infinite input impedance, zero output impedance, flat gain at f<sub>0</sub>).</p>
+<p><b>Advantages:</b> low distortion, simple, easy tuning with a ganged pot. <b>Limitations:</b> needs AGC, limited by op-amp GBW and slew rate, poor frequency stability compared to crystals.</p>
+<div class="box"><b>Common misconceptions:</b> (1) the op-amp does not shift the phase; the feedback network gives 0° at f<sub>0</sub>. (2) Gain exactly 3 will not reliably start; it must exceed 3 initially. (3) Positive feedback does not mean instability; negative feedback keeps the gain controlled.</div></section>
+
+<section id="waves"><h2>4. Waveforms and Frequency Response</h2>
+<p>No Multisim screenshot was supplied, so the figures below are <b>illustrative</b>, generated from the equations in Section 5. Compare your own Multisim transient result with Fig. 2 and your AC analysis with Figs. 3 and 4.</p>
+<figure><svg id="wv" viewBox="0 0 600 180" width="600"></svg><figcaption>Fig. 2 (illustrative): startup of oscillation. Amplitude grows exponentially from noise, then AGC limits it to a steady sine.</figcaption></figure>
+<figure><svg id="mg" viewBox="0 0 600 180" width="600"></svg><figcaption>Fig. 3 (computed): |β| of the feedback network vs frequency (log axis, 0.1f₀ to 10f₀). Peak = 1/3 at f₀.</figcaption></figure>
+<figure><svg id="ph" viewBox="0 0 600 180" width="600"></svg><figcaption>Fig. 4 (computed): phase of β. +90° at low f, 0° at f₀, −90° at high f.</figcaption></figure></section>
+
+<section id="math"><h2>5. Equations and Derivation</h2>
+<p>Series arm Z<sub>s</sub> = R + 1/(sC); parallel arm Z<sub>p</sub> = R/(1 + sRC) (R₁=R₂=R, C₁=C₂=C).</p>
+<div class="eq">β(s) = Z<sub>p</sub>/(Z<sub>s</sub> + Z<sub>p</sub>) = sRC / [1 + 3sRC + (sRC)²]</div>
+<div class="eq">β(jω) = jωRC / [(1 − ω²R²C²) + j3ωRC]</div>
+<p>The phase is zero when the real part of the denominator vanishes: 1 − ω²R²C² = 0.</p>
+<div class="eq">ω<sub>0</sub> = 1/(RC) &nbsp;⇒&nbsp; f<sub>0</sub> = 1/(2πRC) &nbsp;(Hz, with R in Ω and C in F)</div>
+<div class="eq">β(jω<sub>0</sub>) = j/(j3) = 1/3 ∠0°</div>
+<div class="eq">Barkhausen: Aβ = 1 ⇒ A = 3 &nbsp;⇒&nbsp; 1 + R<sub>f</sub>/R<sub>g</sub> = 3 ⇒ R<sub>f</sub> = 2R<sub>g</sub></div>
+<div class="eq">Unequal components (series R₁C₁, parallel R₂C₂): f<sub>0</sub> = 1/(2π√(R₁R₂C₁C₂)); A<sub>min</sub> = 1 + R₁/R₂ + C₂/C₁</div>
+<div class="eq">|β| = x / √[(1 − x²)² + 9x²], x = f/f<sub>0</sub>; phase = 90° − tan⁻¹[3x/(1 − x²)]</div>
+<p><b>Limiting cases:</b> x → 0: β → jx (lead, +90°); x → ∞: β → −j/x (magnitude 1/x, lag, −90°). <b>Decibels:</b> 20 log(1/3) = −9.54 dB; the amplifier must supply +9.54 dB. <b>Variables:</b> R in Ω, C in F, f in Hz, ω in rad/s.</p>
+<div class="box"><b>Quick calculator:</b> R = <input type="number" id="cr" value="10"> kΩ &nbsp; C = <input type="number" id="cc" value="10"> nF &nbsp; → <b>f₀ = <span id="cf"></span></b> &nbsp;(min gain 3, R<sub>f</sub> = 2R<sub>g</sub>)</div></section>
+
+<section id="problems"><h2>6. Solved Numerical Problems</h2>
+<h3>Problem 1 (Easy)</h3><p><b>Given:</b> R = 10 kΩ, C = 10 nF. <b>Find:</b> f₀. <b>Formula:</b> f₀ = 1/(2πRC).</p>
+<p>f₀ = 1/(2π × 10×10³ × 10×10⁻⁹) = 1/(6.283×10⁻⁴) = <b>1.59 kHz</b>. Interpretation: a mid-audio tone.</p>
+<h3>Problem 2 (Moderate, design)</h3><p><b>Given:</b> f₀ = 1 kHz, C = 0.1 µF, R<sub>g</sub> = 10 kΩ. <b>Find:</b> R and R<sub>f</sub>.</p>
+<p>R = 1/(2π × 1000 × 10⁻⁷) = 1/(6.283×10⁻⁴) = <b>1.59 kΩ</b> (use 1.6 kΩ). R<sub>f</sub> = 2R<sub>g</sub> = <b>20 kΩ</b>; in practice use ~22 kΩ (or a pot) so A is slightly above 3 plus AGC. Interpretation: gain must be marginally above 3 for startup.</p>
+<h3>Problem 3 (GATE-style, Difficult)</h3><p><b>Given:</b> series R₁ = 10 kΩ with C₁ = 10 nF, parallel R₂ = 20 kΩ with C₂ = 10 nF. <b>Find:</b> f₀ and minimum amplifier gain.</p>
+<p>f₀ = 1/(2π√(10k × 20k × 10n × 10n)) = 1/(2π × 10⁻⁸ × 14142) = 1/(8.886×10⁻⁴) = <b>1.125 kHz</b>. A<sub>min</sub> = 1 + R₁/R₂ + C₂/C₁ = 1 + 0.5 + 1 = <b>2.5</b>, so R<sub>f</sub>/R<sub>g</sub> = 1.5. <b>Shortcut:</b> with equal C, A<sub>min</sub> = 2 + R₁/R₂.</p></section>
+
+<section id="gate"><h2>7. GATE Preparation (original practice questions)</h2>
+<p>These are original questions, not previous-year GATE papers. Answer all, then press <b>Check Answers</b> to see the correct answer, explanation and common trap for each. Reset to retry.</p><div id="gq"></div></section>
+
+<section id="interview"><h2>8. Core Electronics Interview Questions</h2><div id="iv"></div>
+<div class="box"><b>Industry perspective:</b> Wien bridge stages appear in audio analyzers, calibration sources and sensor-excitation circuits. Engineers verify startup, THD and amplitude stability across temperature and supply, usually in SPICE/Multisim first, then on the bench with an oscilloscope and spectrum analyzer.</div></section>
+
+<section id="apps"><h2>9. Applications and Industry Relevance</h2>
+<table><tr><th>Application</th><th>Role</th></tr>
+<tr><td>Audio signal generators / THD test sets</td><td>Low-distortion sine source</td></tr>
+<tr><td>Sensor excitation (LVDT, bridge transducers)</td><td>Stable AC carrier</td></tr>
+<tr><td>Lab function generators, calibration</td><td>Variable frequency via ganged pot</td></tr>
+<tr><td>Communication training kits</td><td>Baseband tone generation</td></tr></table>
+<p><b>Design considerations:</b> op-amp GBW (≥ 10× 3f₀), slew rate, AGC choice, resistor tolerance (matching affects f₀), capacitor type (film or C0G for low drift). <b>Testing challenges:</b> failure to start (gain &lt; 3), clipping (no AGC), amplitude drift with temperature. <b>Careers:</b> analog design, hardware validation, test and calibration, audio electronics R&amp;D.</p></section>
+
+<section id="quiz"><h2>10. Topic Quiz (10 Questions)</h2><div id="tq"></div></section>
+
+<section id="revision"><h2>11. Revision Notes</h2>
+<table><tr><th>Quantity</th><th>Formula</th></tr><tr><td>Frequency</td><td>f₀ = 1/(2πRC)</td></tr><tr><td>|β| at f₀</td><td>1/3, phase 0°</td></tr><tr><td>Gain condition</td><td>A = 1 + R<sub>f</sub>/R<sub>g</sub> ≥ 3</td></tr><tr><td>Unequal parts</td><td>f₀ = 1/(2π√(R₁R₂C₁C₂)), A = 1 + R₁/R₂ + C₂/C₁</td></tr></table>
+<table><tr><th>Feature</th><th>Wien bridge</th><th>RC phase-shift</th></tr><tr><td>Amplifier</td><td>Non-inverting, A = 3</td><td>Inverting, |A| ≥ 29 (3 stages)</td></tr><tr><td>Feedback phase</td><td>0° at f₀</td><td>180° at f₀</td></tr><tr><td>Tuning</td><td>Easy (ganged pot)</td><td>Harder</td></tr></table>
+<ul><li><b>Memory aid:</b> "Wien → Wire-in-phase, One-third, Three gain".</li>
+<li><b>Troubleshooting:</b> no oscillation → raise R<sub>f</sub>/R<sub>g</sub>; clipped output → add or fix AGC; wrong frequency → check R/C values and tolerances; distortion at high f → op-amp GBW or slew rate too low.</li>
+<li><b>High-priority GATE:</b> f₀ formula, gain = 3, β = 1/3, unequal-component gain, lamp placement.</li></ul></section>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+function line(el,pts,col,axis){let h='';if(axis)h+=`<line x1="30" y1="${axis}" x2="590" y2="${axis}" stroke="#aab"/>`;el.innerHTML=h+`<polyline fill="none" stroke="${col}" stroke-width="2" points="${pts}"/>`+(el.innerHTML.includes('text')?'':'');}
+(function(){let p=[];for(let i=0;i<=600;i++){let t=i/600,a=1-Math.exp(-t*6);a=Math.tanh(a*1.6)/Math.tanh(1.6)*0.95;p.push((i)+","+(90-75*a*Math.sin(2*Math.PI*14*t)).toFixed(1));}
+line($('wv'),p.join(' '),'#0b5394',90);
+let m=[],f=[];for(let i=0;i<=560;i++){let x=Math.pow(10,-1+2*i/560);let re=1-x*x,im=3*x;m.push((30+i)+","+(160-420*(x/Math.hypot(re,im))).toFixed(1));let ph=90-Math.atan2(im,re)*180/Math.PI;f.push((30+i)+","+(90-ph*0.9).toFixed(1));}
+line($('mg'),m.join(' '),'#c0392b',160);line($('ph'),f.join(' '),'#1e8449',90);
+$('mg').innerHTML+='<text x="300" y="170" font-size="11" text-anchor="middle">f / f₀ (log) – peak 0.333 at centre</text>';
+$('ph').innerHTML+='<text x="300" y="175" font-size="11" text-anchor="middle">f / f₀ (log) – +90° → 0° → −90°</text>';})();
+function calc(){let r=$('cr').value*1e3,c=$('cc').value*1e-9,f=1/(2*Math.PI*r*c);$('cf').textContent=f>=1000?(f/1000).toFixed(3)+' kHz':f.toFixed(1)+' Hz';}
+$('cr').oninput=$('cc').oninput=calc;calc();
+const Q={};
+function mk(id,d){$(id).innerHTML=d.map((x,i)=>`<div class="q" id="${id}${i}"><p><b>Q${i+1}.</b> ${x.q}${x.d?` <span class="tag">${x.d}</span>`:''}</p>`+x.o.map((o,j)=>`<label><input type="radio" name="${id}${i}" value="${j}"> ${'ABCD'[j]}. ${o}</label>`).join('')+`<div class="ex" hidden></div></div>`).join('')+`<button onclick="chk('${id}')">Check Answers</button><button onclick="rst('${id}')">Reset Quiz</button><span class="score" id="${id}s"></span>`;Q[id]=d;}
+function chk(id){let s=0;Q[id].forEach((x,i)=>{let b=$(id+i),r=document.querySelector(`input[name="${id}${i}"]:checked`),e=b.querySelector('.ex');b.className='q';e.hidden=false;
+if(!r){b.classList.add('un');e.innerHTML=`<b>Unanswered.</b> Correct: ${'ABCD'[x.a]}. ${x.e}`;}
+else if(+r.value===x.a){s++;b.classList.add('ok');e.innerHTML=`<b>Correct.</b> ${x.e}`;}
+else{b.classList.add('bad');e.innerHTML=`<b>Incorrect.</b> Correct: ${'ABCD'[x.a]}. ${x.e}`;}});
+let n=Q[id].length;$(id+'s').textContent=` Score: ${s}/${n} (${Math.round(100*s/n)}%)`;}
+function rst(id){document.querySelectorAll(`#${id} input`).forEach(i=>i.checked=false);document.querySelectorAll(`#${id} .q`).forEach(b=>{b.className='q';b.querySelector('.ex').hidden=true;});$(id+'s').textContent='';}
+mk('gq',[
+{d:'Easy',q:'A Wien bridge oscillator has R = 1 kΩ and C = 0.1 µF. Its frequency is nearest to:',o:['159 Hz','1.59 kHz','15.9 kHz','628 Hz'],a:1,e:'f₀ = 1/(2π·10³·10⁻⁷) = 1591 Hz. Trap: forgetting the 2π gives 10 kHz-scale answers.'},
+{d:'Easy',q:'For equal R and C, the minimum amplifier gain needed for sustained oscillation is:',o:['1','2','3','1/3'],a:2,e:'β = 1/3 at f₀, so A = 3. 1/3 is the network gain, not the amplifier gain.'},
+{d:'Easy',q:'The phase shift of the lead-lag network at f₀ is:',o:['0°','90°','180°','−90°'],a:0,e:'At ω = 1/RC, β = j/(j3) = 1/3 ∠0°. 180° belongs to the RC phase-shift oscillator.'},
+{d:'Moderate',q:'With R<sub>g</sub> = 10 kΩ, the minimum R<sub>f</sub> for oscillation is:',o:['10 kΩ','20 kΩ','30 kΩ','5 kΩ'],a:1,e:'1 + R<sub>f</sub>/R<sub>g</sub> = 3 → R<sub>f</sub> = 2R<sub>g</sub> = 20 kΩ (practically slightly more).'},
+{d:'Moderate',q:'The magnitude of β at f = 2f₀ is approximately:',o:['0.333','0.298','0.5','0.2'],a:1,e:'|β| = x/√[(1−x²)²+9x²] = 2/√(9+36) = 0.298. Same at f₀/2 by symmetry.'},
+{d:'Moderate',q:'R₁ = R₂ = 10 kΩ and f₀ = 5 kHz. The required C is:',o:['3.18 nF','31.8 nF','318 pF','1.59 nF'],a:0,e:'C = 1/(2πRf₀) = 1/(2π·10⁴·5×10³) = 3.18 nF.'},
+{d:'Moderate',q:'A lamp with positive temperature coefficient used for amplitude control is placed in:',o:['R<sub>g</sub> (ground leg)','R<sub>f</sub> (feedback leg)','Series with C','The supply rail'],a:0,e:'Rising amplitude heats the lamp, R<sub>g</sub> increases, gain 1 + R<sub>f</sub>/R<sub>g</sub> falls. In R<sub>f</sub> it would increase gain (wrong).'},
+{d:'Difficult',q:'Series R₁ = 10 kΩ, C₁ = 10 nF; parallel R₂ = 20 kΩ, C₂ = 10 nF. Minimum amplifier gain is:',o:['2.5','3','1.5','4'],a:0,e:'A = 1 + R₁/R₂ + C₂/C₁ = 1 + 0.5 + 1 = 2.5 (R<sub>f</sub>/R<sub>g</sub> = 1.5). Trap: assuming 3 for unequal values.'},
+{d:'Difficult',q:'If the gain is slightly above 3 and no amplitude control exists, the output is:',o:['Constant small sine','Decaying sine','Growing then clipped (distorted) wave','Zero'],a:2,e:'Aβ &gt; 1 keeps growing until the op-amp saturates, producing a clipped, distorted wave.'},
+{d:'Difficult',q:'A ganged pot varies R from 1 kΩ to 10 kΩ with C = 100 nF. The frequency range is:',o:['159 Hz – 1.59 kHz','15.9 – 159 Hz','1.59 – 15.9 kHz','159 Hz – 15.9 kHz'],a:0,e:'f<sub>max</sub> = 1/(2π·10³·10⁻⁷) = 1.59 kHz at 1 kΩ; f<sub>min</sub> = 159 Hz at 10 kΩ. Ratio 10:1.'}]);
+const iv=[
+['Why must the gain be slightly more than 3?','Aβ must exceed 1 at start so noise grows into oscillation; exactly 3 may not start or may die with component drift. AGC then pulls it back to 3.'],
+['What gives the 0° phase at f₀?','The lead-lag RC network: series arm leads, parallel arm lags; they cancel at f₀ = 1/(2πRC).'],
+['Compare Wien bridge and RC phase-shift oscillators.','Wien: non-inverting, A = 3, easy tuning, low distortion. Phase-shift: inverting, |A| ≥ 29 with three sections, harder tuning.'],
+['How do you stabilize the amplitude?','Positive-tempco lamp in R<sub>g</sub>, back-to-back diodes across part of R<sub>f</sub>, or a JFET as a voltage-controlled resistor with a peak detector.'],
+['Follow-up: why not use diodes directly?','Diode conduction adds distortion as it clips the waveform softly; the lamp is slow and so gives lower distortion.'],
+['Design scenario: oscillator does not start. Debug steps?','Check supplies, measure R<sub>f</sub>/R<sub>g</sub> (needs &gt; 2), check lamp cold resistance, verify R and C values, check op-amp GBW and probe the + input for the noise bump.'],
+['Lab: how do you measure f₀ and distortion?','Oscilloscope for period (f = 1/T), FFT or spectrum analyzer for harmonics, THD analyzer for percentage.'],
+['Simulation: how do you see startup in Multisim?','Run transient analysis, set initial conditions or a small noise or pulse source; view output growth then limiting. Use AC analysis on the network to see β = 1/3 peak.'],
+['How does the op-amp GBW limit f₀?','Gain 3 requires GBW ≥ roughly 10 × 3 × f₀. Low GBW adds phase lag, shifting f<sub>0</sub> and reducing amplitude.'],
+['How is frequency tuned over a decade?','Use a dual-ganged potentiometer for both R together (f ∝ 1/R) and switch capacitors for decades.']];
+$('iv').innerHTML=iv.map((x,i)=>`<details><summary>Q${i+1}. ${x[0]}</summary><p>${x[1]}</p></details>`).join('');
+mk('tq',[
+{q:'The Wien bridge oscillator is a:',o:['LC oscillator','Sinusoidal RC oscillator','Relaxation oscillator','Crystal oscillator'],a:1,e:'It uses resistors and capacitors in the feedback network to generate a sine wave.'},
+{q:'Frequency of oscillation (equal R, C):',o:['1/(2π√(LC))','1/(RC)','1/(2πRC)','1/(6RC)'],a:2,e:'f₀ = 1/(2πRC) from the zero-phase condition.'},
+{q:'Barkhausen criterion requires:',o:['|Aβ| = 1 and phase 0°/360°','|Aβ| &lt; 1','|Aβ| = 0','Phase 90°'],a:0,e:'Magnitude of loop gain 1 and total phase shift 0° or a multiple of 360°.'},
+{q:'The feedback network gain at f₀ is:',o:['1','1/3','3','1/29'],a:1,e:'β(jω₀) = 1/3 ∠0°.'},
+{q:'The RC feedback network is connected to the:',o:['Inverting input','Non-inverting input','Supply pin','Output only'],a:1,e:'Positive feedback goes to the + input; R<sub>f</sub>/R<sub>g</sub> goes to the − input.'},
+{q:'Initial gain is set slightly above 3 to:',o:['Reduce power','Start oscillations from noise','Lower f₀','Reduce THD to zero'],a:1,e:'Aβ &gt; 1 ensures growth from noise.'},
+{q:'A common amplitude-stabilization element is:',o:['Zener in series with C','Lamp or diodes in the gain network','Extra capacitor','Inductor'],a:1,e:'They reduce gain as amplitude rises.'},
+{q:'If gain is below 3:',o:['Output grows','Sustained oscillation','Oscillation dies out','Frequency doubles'],a:2,e:'Aβ &lt; 1 makes any oscillation decay.'},
+{q:'The practical upper frequency is limited mainly by:',o:['Resistor colour','Op-amp GBW and slew rate','Supply polarity','Lamp colour'],a:1,e:'Insufficient GBW adds phase lag and reduces gain at f₀.'},
+{q:'Compared with a 3-stage RC phase-shift oscillator, Wien bridge needs gain:',o:['29','Only 3','100','1/3'],a:1,e:'Wien needs A = 3 against |A| ≥ 29 for the phase-shift oscillator.'}]);
+</script></body></html>
